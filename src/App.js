@@ -1,33 +1,51 @@
 
-import { useState } from 'react';
+import { useReducer} from 'react';
 import './App.css';
+// import {SEARCH_MOVIES_REQUEST,SEARCH_MOVIES_SUCCESS,SEARCH_MOVIES_FAILURE} from './actionTypes'
 import Header from './components/Header/Header';
 import Movie from './components/Movie/Movie';
 import Search from './components/Search/Search';
+import reducer from './reducer/reducer'
 
-const MOVIE_API_URL = "http://www.omdbapi.com/?i=tt3896198&apikey=384cdb1b"
+const initialState = {
+	loading: true,
+	movies: [],
+	errorMessage: null
+}
+
+const SEARCH_MOVIES_REQUEST = 'SEARCH_MOVIES_REQUEST'
+const SEARCH_MOVIES_SUCCESS = 'SEARCH_MOVIES_SUCCESS'
+const SEARCH_MOVIES_FAILURE = 'SEARCH_MOVIES_FAILURE'
 
 const App = () => {
-	const [loading, setLoading] = useState(true)
-	const [movies, setMovies] = useState([])
-	const [errorMessage, setErrorMessage] = useState(null)
+
+	const [state, dispatch] = useReducer(reducer,initialState)
 
 	const search = searchValue => {
-		setLoading(true)
-		setErrorMessage(null)
+
+		dispatch({
+			type: SEARCH_MOVIES_REQUEST
+		})
 
 		fetch(`https://www.omdbapi.com/?s=${searchValue}&apikey=384cdb1b`)
 			.then(response => response.json())
 			.then(jsonResponse => {
 				if (jsonResponse.Response === 'True') {
-					setMovies(jsonResponse.Search)
-					setLoading(false)
+					dispatch({
+						type: SEARCH_MOVIES_SUCCESS,
+						payload: jsonResponse.Search
+					})
 				} else {
-					setErrorMessage(jsonResponse.Error)
-					setLoading(false)
+					dispatch({
+						type: SEARCH_MOVIES_FAILURE,
+						payload: jsonResponse.Error
+					})
 				}
 			})
 	}
+
+	const { movies, errorMessage, loading} = state
+
   return (
     <div className="App">
 		 <Header text='HOOKED'/>
